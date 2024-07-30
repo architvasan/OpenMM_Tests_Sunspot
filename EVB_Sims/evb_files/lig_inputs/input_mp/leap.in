@@ -1,0 +1,14 @@
+source leaprc.protein.ff19SB
+source leaprc.RNA.OL3
+source leaprc.DNA.OL15
+source leaprc.gaff
+source leaprc.water.opc
+set default PBRadii mbondi3
+lig_segA_0 = loadmol2 lig_segA_0.mol2
+loadAmberParams lig_segA_0.frcmod
+lig_segB_0 = loadmol2 lig_segB_0.mol2
+loadAmberParams lig_segB_0.frcmod
+comp = combine {  lig_segA_0 lig_segB_0 }
+saveAmberParm comp /lambda_stor/homes/heng.ma/Research/gene_transformer/mdh_evb/inputs/lig_inputs/input_mp/mp.prmtop /lambda_stor/homes/heng.ma/Research/gene_transformer/mdh_evb/inputs/lig_inputs/input_mp/mp.inpcrd
+savepdb comp /lambda_stor/homes/heng.ma/Research/gene_transformer/mdh_evb/inputs/lig_inputs/input_mp/mp.pdb
+quit
