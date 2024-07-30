@@ -193,11 +193,11 @@ class Simulate(yml_base):
             integrator = omm.VerletIntegrator(self.dt)
 
         try:
-            platform = omm.Platform_getPlatformByName("CUDA")
+            platform = omm.Platform.getPlatformByName("CUDA")
             properties = {'DeviceIndex': str(self.gpu_id),
                           'CudaPrecision': 'mixed'}
         except Exception:
-            platform = omm.Platform_getPlatformByName("OpenCL")
+            platform = omm.Platform.getPlatformByName("OpenCL")
             properties = {'OpenCLPlatformIndex': '0','DeviceIndex': str(0)}
             print(properties)
 

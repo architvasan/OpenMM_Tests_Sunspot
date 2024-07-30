@@ -32,7 +32,7 @@ def _pin_to_resources(rank_queue: Queue, total_ranks: int):
     #os.environ['NUM_WORKERS'] = f'{ngpus}'
     #os.environ['ZEX_NUMBER_OF_CCS'] = ",".join([f"{i}:1" for i in range(ngpus)])
 
-    os.environ['ZE_FLAT_DEVICE_HIERARCHY']='COMPOSITE'
+    os.environ['ZE_FLAT_DEVICE_HIERARCHY']='FLAT'
     """Pop the rank off the list queue to get your rank, then assign to associated resources """
     # Get my rank
     rank = rank_queue.get()
