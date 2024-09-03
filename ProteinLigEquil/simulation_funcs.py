@@ -61,34 +61,51 @@ def load_amber_files(inpcrd_fil, prmtop_fil):
     system = prmtop.createSystem(nonbondedMethod=PME,
                                 removeCMMotion=False,
                                 nonbondedCutoff=1*nanometer,
-                                constraints=HBonds)
+                                constraints=HBonds,
+                                hydrogenMass=4*amu)
 
-    PDBFile.writeFile(prmtop.topology,
- 	                    inpcrd.positions,
- 	                    file = 'out.pdb',
-                        )		
+    #PDBFile.writeFile(prmtop.topology,
+ 	#                    inpcrd.positions,
+ 	#                    file = 'out.pdb',
+    #                    )		
 
     return system, prmtop, inpcrd
 
 
-def setup_sim_nomin(system, prmtop, inpcrd, d_ind=0):
-    posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 0)
+def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind=0, cpu_threads=1):
+    #posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 0)
 
-    integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
+    integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.004*picoseconds)
 
-    platform = Platform.getPlatformByName('OpenCL')
-    #properties = {'DeviceIndex': f'{d_ind}', 'Precision': 'mixed'}
-    properties = {'OpenCLPlatformIndex': '0', 'DeviceIndex':'0'}
-    simulation = Simulation(prmtop.topology,
+    if device_type=='cuda':
+        platform = Platform.getPlatformByName('CUDA')
+        properties = {'DeviceIndex': d_ind, 'Precision': 'mixed'}
+        simulation = Simulation(prmtop.topology,
+                        posres_sys,
+                        integrator,
+                        platform,
+                        properties)
+
+    elif device_type=='cpu':
+        platform = Platform.getPlatformByName('CPU')
+        os.environ["OPENMM_CPU_THREADS"]=cpu_threads
+        simulation = Simulation(prmtop.topology,
+                            posres_sys,
+                            integrator,
+                            platform,
+                            )
+
+    elif device_type=='xpu':
+       platform = Platform.getPlatformByName('OpenCL')
+       properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': 'mixed'}
+       simulation = Simulation(prmtop.topology,
                             posres_sys,
                             integrator,
                             platform,
                             properties)
-    #simulation.context.setParameter('k', 0)
-    #simulation.context.setPositions(inpcrd.positions)
-    #simulation.reporters.append(PDBReporter('output.pdb', 1000))
+
     simulation.reporters.append(StateDataReporter(stdout,
-                                5000,
+                                10000,
                                 step=True,
                                 potentialEnergy=True,
                                 speed=True,
@@ -96,14 +113,38 @@ def setup_sim_nomin(system, prmtop, inpcrd, d_ind=0):
     return simulation, integrator
 
 
-def setup_sim(system, prmtop, inpcrd, d_ind=0):
+def setup_sim(system, 
+            prmtop,
+            inpcrd,
+            device_type,
+            d_ind=0,
+            cpu_threads=1):
+
     posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 10)
-    integrator = LangevinMiddleIntegrator(5*kelvin, 1/picosecond, 0.002*picoseconds)
+    integrator = LangevinMiddleIntegrator(5*kelvin, 1/picosecond, 0.004*picoseconds)
 
-    platform = Platform.getPlatformByName('OpenCL')
-    properties = {'OpenCLPlatformIndex': '0', 'DeviceIndex':'0'}
+    if device_type=='cuda':
+        platform = Platform.getPlatformByName('CUDA')
+        properties = {'DeviceIndex': d_ind, 'Precision': 'mixed'}
+        simulation = Simulation(prmtop.topology,
+                        posres_sys,
+                        integrator,
+                        platform,
+                        properties)
 
-    simulation = Simulation(prmtop.topology,
+    elif device_type=='cpu':
+        platform = Platform.getPlatformByName('CPU')
+        os.environ["OPENMM_CPU_THREADS"]=cpu_threads
+        simulation = Simulation(prmtop.topology,
+                            posres_sys,
+                            integrator,
+                            platform,
+                            )
+
+    elif device_type=='xpu':
+       platform = Platform.getPlatformByName('OpenCL')
+       properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': 'mixed'}
+       simulation = Simulation(prmtop.topology,
                             posres_sys,
                             integrator,
                             platform,
@@ -125,9 +166,9 @@ def warming(simulation, integrator):
     simulation.context.setVelocitiesToTemperature(5*kelvin)
     print('Warming up the system...')
     T = 5
-    mdsteps = 54000
-    for i in range(54):
-      simulation.step(int(mdsteps/54) )
+    mdsteps = 60000
+    for i in range(60):
+      simulation.step(int(mdsteps/60) )
       temp = (T+(i*T))
       if temp>300:
         temp = 300
@@ -141,7 +182,7 @@ def equilib(simulation,
             chkpt,
             state_out):
 
-    #simulation.context.reinitialize(True)
+    simulation.context.reinitialize(True)
     for i in range(100):
       simulation.step(int(mdsteps/100))
       k = float(99.02-(i*0.98))
@@ -159,16 +200,21 @@ def run_eq(inpcrd_fil,
         prmtop_fil,
         state_out,
         chkpt,
+        device_type,
         mdsteps=500000,
-        d_ind=0):
+        d_ind=0,
+        cpu_threads=1):
     
     system, prmtop, inpcrd = load_amber_files(inpcrd_fil,
                                             prmtop_fil)
 
-    posres_sys, simulation, integrator = setup_sim(system,
-                                                prmtop,
-                                                inpcrd,
-                                                d_ind=d_ind)
+    posres_sys, simulation, integrator = setup_sim(system, 
+                                                    prmtop,
+                                                    inpcrd,
+                                                    device_type,
+                                                    d_ind=d_ind,
+                                                    cpu_threads=cpu_threads,
+                                                    )
 
     simulation, integrator = warming(simulation, integrator)
 
@@ -199,7 +245,7 @@ def run_prod(simulation,
     
     ### DCD reporter
     simulation.reporters.append(
-        DCDReporter(output_dcd, 5000))
+        DCDReporter(output_dcd, 10000))
     
     ### Data reporter
     simulation.reporters.append(
