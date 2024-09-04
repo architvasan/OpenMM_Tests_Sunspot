@@ -20,11 +20,11 @@ prmtop_fil = 'struct/prmtop1'
 eq_st = 'eq/eq.state'
 eq_chkpt = 'eq/eq.chk'
 device_type = 'cpu'
-cpu_threads = 5
+cpu_threads = '5'
 #os.environ["OPENMM_CPU_THREADS"]=5
 eq_simulation = run_eq(inpcrd_fil,
                         prmtop_fil,
                         eq_st,
                         eq_chkpt,
                         device_type,
-                        cpu_threads)
+                        cpu_threads=cpu_threads)

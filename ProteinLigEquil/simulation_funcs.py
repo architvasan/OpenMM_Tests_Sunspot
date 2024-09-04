@@ -72,7 +72,7 @@ def load_amber_files(inpcrd_fil, prmtop_fil):
     return system, prmtop, inpcrd
 
 
-def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind=0, cpu_threads=1):
+def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind='0', cpu_threads="1"):
     #posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 0)
 
     integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.004*picoseconds)
@@ -96,6 +96,8 @@ def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind=0, cpu_threads=1)
                             )
 
     elif device_type=='xpu':
+       print(d_ind)
+       #os.environ["ZE_AFFINITY_MASK"]=d_ind
        platform = Platform.getPlatformByName('OpenCL')
        properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': 'mixed'}
        simulation = Simulation(prmtop.topology,
@@ -117,8 +119,8 @@ def setup_sim(system,
             prmtop,
             inpcrd,
             device_type,
-            d_ind=0,
-            cpu_threads=1):
+            d_ind="0",
+            cpu_threads="1"):
 
     posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 10)
     integrator = LangevinMiddleIntegrator(5*kelvin, 1/picosecond, 0.004*picoseconds)
@@ -133,8 +135,10 @@ def setup_sim(system,
                         properties)
 
     elif device_type=='cpu':
-        platform = Platform.getPlatformByName('CPU')
         os.environ["OPENMM_CPU_THREADS"]=cpu_threads
+        platform = Platform.getPlatformByName('CPU')
+        #print(cpu_threads)
+        #print(platform)
         simulation = Simulation(prmtop.topology,
                             posres_sys,
                             integrator,
@@ -142,8 +146,12 @@ def setup_sim(system,
                             )
 
     elif device_type=='xpu':
+       #print(d_ind)
        platform = Platform.getPlatformByName('OpenCL')
-       properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': 'mixed'}
+       #'DeviceIndex':'0',
+       properties = {'OpenCLPlatformIndex': '0',  'DeviceIndex':'0', 'Precision': 'mixed'}
+       #print(platform)
+       #print(properties)
        simulation = Simulation(prmtop.topology,
                             posres_sys,
                             integrator,
@@ -202,8 +210,8 @@ def run_eq(inpcrd_fil,
         chkpt,
         device_type,
         mdsteps=500000,
-        d_ind=0,
-        cpu_threads=1):
+        d_ind="0",
+        cpu_threads='1'):
     
     system, prmtop, inpcrd = load_amber_files(inpcrd_fil,
                                             prmtop_fil)
