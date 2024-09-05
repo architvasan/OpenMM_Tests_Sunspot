@@ -81,7 +81,7 @@ def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind='0', cpu_threads=
         platform = Platform.getPlatformByName('CUDA')
         properties = {'DeviceIndex': d_ind, 'Precision': 'mixed'}
         simulation = Simulation(prmtop.topology,
-                        posres_sys,
+                        system,
                         integrator,
                         platform,
                         properties)
@@ -90,7 +90,7 @@ def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind='0', cpu_threads=
         platform = Platform.getPlatformByName('CPU')
         os.environ["OPENMM_CPU_THREADS"]=cpu_threads
         simulation = Simulation(prmtop.topology,
-                            posres_sys,
+                            system,
                             integrator,
                             platform,
                             )
@@ -101,7 +101,7 @@ def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind='0', cpu_threads=
        platform = Platform.getPlatformByName('OpenCL')
        properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': 'mixed'}
        simulation = Simulation(prmtop.topology,
-                            posres_sys,
+                            system,
                             integrator,
                             platform,
                             properties)
