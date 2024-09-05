@@ -40,7 +40,7 @@ eq_simulation, integrator = setup_sim_nomin(system,
                                             cpu_threads=cpu_threads
                                             )
 
-eq_simulation.context.setParameter('k', 0)
+#eq_simulation.context.setParameter('k', 0)
 
 prod_1_sim = run_prod(eq_simulation, 
                         prod_steps,
