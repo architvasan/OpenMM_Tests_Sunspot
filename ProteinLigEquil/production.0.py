@@ -26,6 +26,8 @@ prod_st = 'prod0/prod0.state'
 prod_dcd = 'prod0/prod0.dcd'
 prod_rst = 'prod0/prod0.rst.chk'
 prod_log = 'prod0/prod0.csv'
+device_type = 'cpu'
+cpu_threads = '5'
 
 system, prmtop, inpcrd = load_amber_files(inpcrd_fil,
                                         prmtop_fil)
@@ -33,7 +35,10 @@ system, prmtop, inpcrd = load_amber_files(inpcrd_fil,
 eq_simulation, integrator = setup_sim_nomin(system,
                                             prmtop,
                                             inpcrd,
-                                            d_ind=d_ind)
+                                            device_type,
+                                            d_ind=d_ind,
+                                            cpu_threads=cpu_threads
+                                            )
 
 eq_simulation.context.setParameter('k', 0)
 
