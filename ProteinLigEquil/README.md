@@ -9,6 +9,10 @@
     - struct/inprcd1
     - struct/prmtop1
 
+When running simulations on Sunspot/Aurora, 
+
+`set ZE_FLAT_DEVICE_HIERARY=FLAT`
+
 ## Warm + equilibrate system
 
 `python equilibrate.py -h`
