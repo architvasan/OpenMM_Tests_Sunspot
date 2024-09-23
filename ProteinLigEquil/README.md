@@ -1,4 +1,4 @@
-# AutomateSims
+# Protein Ligand Simulations
 
 ## Create protein-ligand solvated + ionized system
 
@@ -11,9 +11,46 @@
 
 ## Warm + equilibrate system
 
-`python equilibrate.py`
+`python equilibrate.py -h`
+
+Available arguments are:
+```
+-i, --inpcrd: inpcrd file
+-p, --prmtop: prmtop file
+-s, --state, output state file
+-c, --check, output checkpoint
+-dt, --devtype, device type
+    options: cuda, xpu, cpu
+-cpu, --cputhreads, number cpu threads
+-S, --steps, number of steps
+-P, --precision, precision: double/mixed
+-D, --device, device number
+    single: (0-12 (xpu))
+    multiple: (eg 0,1)
+```
 
 ## Production for system
 
-`python production.0.py`
+`python production.0.py -h`
+
+Available arguments are:
+
+```
+-i, --inpcrd: inpcrd file
+-p, --prmtop: prmtop file
+-ec, --eqcheck, equil checkpoint
+-ps, --prostate, prod state file
+-pc, --procheck, prod checkpoint
+-pr, --prorst, prod restart
+-pd, --prodcd, prod dcd
+-pl, --prolog, prod log
+-dt, --devtype, device type
+    options: cuda, xpu, cpu
+-cpu, --cputhreads, number cpu threads
+-S, --steps, number of steps
+-P, --precision, precision: double/mixed
+-D, --device, device number
+    single: (0-12 (xpu))
+    multiple: (eg 0,1)
+```
 
