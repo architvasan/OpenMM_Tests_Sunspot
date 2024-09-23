@@ -72,14 +72,21 @@ def load_amber_files(inpcrd_fil, prmtop_fil):
     return system, prmtop, inpcrd
 
 
-def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind='0', cpu_threads="1"):
+def setup_sim_nomin(system,
+                    prmtop,
+                    inpcrd,
+                    device_type,
+                    d_ind='0',
+                    precision='mixed',
+                    cpu_threads="1"):
+
     #posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 0)
 
     integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.004*picoseconds)
 
     if device_type=='cuda':
         platform = Platform.getPlatformByName('CUDA')
-        properties = {'DeviceIndex': d_ind, 'Precision': 'mixed'}
+        properties = {'DeviceIndex': d_ind, 'Precision': precision}
         simulation = Simulation(prmtop.topology,
                         system,
                         integrator,
@@ -99,7 +106,7 @@ def setup_sim_nomin(system, prmtop, inpcrd, device_type, d_ind='0', cpu_threads=
        print(d_ind)
        #os.environ["ZE_AFFINITY_MASK"]=d_ind
        platform = Platform.getPlatformByName('OpenCL')
-       properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': 'mixed'}
+       properties = {'OpenCLPlatformIndex': d_ind, 'DeviceIndex':d_ind, 'Precision': precision}
        simulation = Simulation(prmtop.topology,
                             system,
                             integrator,
@@ -120,6 +127,7 @@ def setup_sim(system,
             inpcrd,
             device_type,
             d_ind="0",
+            precision="mixed",
             cpu_threads="1"):
 
     posres_sys = add_backbone_posres(system, inpcrd.positions, prmtop.topology.atoms(), 10)
@@ -127,7 +135,7 @@ def setup_sim(system,
 
     if device_type=='cuda':
         platform = Platform.getPlatformByName('CUDA')
-        properties = {'DeviceIndex': d_ind, 'Precision': 'mixed'}
+        properties = {'DeviceIndex': d_ind, 'Precision': precision}
         simulation = Simulation(prmtop.topology,
                         posres_sys,
                         integrator,
@@ -149,7 +157,9 @@ def setup_sim(system,
        #print(d_ind)
        platform = Platform.getPlatformByName('OpenCL')
        #'DeviceIndex':'0',
-       properties = {'OpenCLPlatformIndex': '0',  'DeviceIndex':'0', 'Precision': 'mixed'}
+       properties = {'OpenCLPlatformIndex': d_ind,  'DeviceIndex': d_ind, 'Precision': precision}
+       #
+       print(properties)
        #print(platform)
        #print(properties)
        simulation = Simulation(prmtop.topology,
@@ -167,6 +177,7 @@ def setup_sim(system,
                                 potentialEnergy=True,
                                 speed=True,
                                 temperature=True))
+
     simulation.step(10000)
     return posres_sys, simulation, integrator
 
@@ -210,6 +221,7 @@ def run_eq(inpcrd_fil,
         chkpt,
         device_type,
         mdsteps=500000,
+        precision='mixed',
         d_ind="0",
         cpu_threads='1'):
     
@@ -221,6 +233,7 @@ def run_eq(inpcrd_fil,
                                                     inpcrd,
                                                     device_type,
                                                     d_ind=d_ind,
+                                                    precision = precision,
                                                     cpu_threads=cpu_threads,
                                                     )
 
